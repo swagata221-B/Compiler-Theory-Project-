@@ -1,0 +1,40 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Build",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "make",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Compile gcd.pas",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "make && ./minipascal samples/gcd.pas",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Show tokens (gcd.pas)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "make && ./minipascal --tokens samples/gcd.pas",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Compile broken.pas",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "make && ./minipascal samples/broken.pas",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Run tests",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "make test",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

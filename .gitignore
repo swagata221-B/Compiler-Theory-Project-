@@ -1,0 +1,16 @@
+# build
+/minipascal
+compiler/lex.yy.c
+compiler/parser.tab.c
+compiler/parser.tab.h
+compiler/*.o
+
+# editor
+.DS_Store
+*.swp
+
+# leftover web toolchain
+/node_modules
+/.next
+/out
+agent-tools/
