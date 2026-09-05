@@ -5,35 +5,68 @@
       "name": "Build",
       "type": "node-terminal",
       "request": "launch",
-      "command": "make",
+      "command": "powershell -ExecutionPolicy Bypass -File ./build.ps1",
+      "windows": {
+        "command": "powershell -ExecutionPolicy Bypass -File ./build.ps1"
+      },
+      "linux": {
+        "command": "make"
+      },
+      "osx": {
+        "command": "make"
+      },
       "cwd": "${workspaceFolder}"
     },
     {
       "name": "Compile gcd.pas",
       "type": "node-terminal",
       "request": "launch",
-      "command": "make && ./minipascal samples/gcd.pas",
+      "command": "powershell -ExecutionPolicy Bypass -File ./build.ps1; if ($LASTEXITCODE -eq 0) { .\\minipascal.exe samples\\gcd.pas }",
+      "linux": {
+        "command": "make && ./minipascal samples/gcd.pas"
+      },
+      "osx": {
+        "command": "make && ./minipascal samples/gcd.pas"
+      },
       "cwd": "${workspaceFolder}"
     },
     {
       "name": "Show tokens (gcd.pas)",
       "type": "node-terminal",
       "request": "launch",
-      "command": "make && ./minipascal --tokens samples/gcd.pas",
+      "command": "powershell -ExecutionPolicy Bypass -File ./build.ps1; if ($LASTEXITCODE -eq 0) { .\\minipascal.exe --tokens samples\\gcd.pas }",
+      "linux": {
+        "command": "make && ./minipascal --tokens samples/gcd.pas"
+      },
+      "osx": {
+        "command": "make && ./minipascal --tokens samples/gcd.pas"
+      },
       "cwd": "${workspaceFolder}"
     },
     {
       "name": "Compile broken.pas",
       "type": "node-terminal",
       "request": "launch",
-      "command": "make && ./minipascal samples/broken.pas",
+      "command": "powershell -ExecutionPolicy Bypass -File ./build.ps1; if ($LASTEXITCODE -eq 0) { .\\minipascal.exe samples\\broken.pas }",
+      "linux": {
+        "command": "make && ./minipascal samples/broken.pas"
+      },
+      "osx": {
+        "command": "make && ./minipascal samples/broken.pas"
+      },
       "cwd": "${workspaceFolder}"
     },
     {
       "name": "Run tests",
       "type": "node-terminal",
       "request": "launch",
-      "command": "make test",
+      "command": "powershell -ExecutionPolicy Bypass -File ./tests/run.ps1",
+      "linux": {
+        "command": "make test"
+      },
+      "osx": {
+        "command": "make test"
+      },
       "cwd": "${workspaceFolder}"
     }
   ]

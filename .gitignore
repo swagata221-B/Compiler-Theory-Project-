@@ -1,9 +1,11 @@
 # build
 /minipascal
+/minipascal.exe
 compiler/lex.yy.c
 compiler/parser.tab.c
 compiler/parser.tab.h
 compiler/*.o
+compiler/*.obj
 
 # editor
 .DS_Store

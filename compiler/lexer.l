@@ -1,5 +1,10 @@
 %{
+#ifndef _WIN32
 #define _POSIX_C_SOURCE 200809L
+#endif
+#ifdef _WIN32
+#define YY_NO_UNISTD_H 1
+#endif
 #include "ast.h"
 #include "parser.tab.h"
 

@@ -18,24 +18,29 @@ Node.js was the wrong stack for this assignment. The project is C + Flex + Bison
 
 ## How to run it in VS Code
 
-You do not need any preview link.
+You do not need Linux. The course tools are Flex, Bison, and gcc. Those exist as Windows programs.
 
-1. Install a C toolchain with Flex and Bison.
-   - Ubuntu / WSL: `sudo apt install build-essential flex bison`
-2. **File → Open Folder** on this project.
-3. Terminal:
+1. Install Flex, Bison, and gcc on Windows (once):
 
-```bash
-make
-./minipascal samples/gcd.pas
-./minipascal --tokens samples/gcd.pas
-./minipascal samples/broken.pas
-make test
+```powershell
+winget install -e --id WinFlexBison.win_flex_bison
+winget install -e --id BrechtSanders.WinLibs.POSIX.UCRT
 ```
 
-Run and Debug has **Build**, **Compile gcd.pas**, **Show tokens**, and **Run tests**.
+2. **File → Open Folder** on this project.
+3. PowerShell:
 
-On Windows, WSL is the simple path. Native `win_flex` / `win_bison` + MinGW also works if those names are on PATH.
+```powershell
+.\build.ps1
+.\minipascal.exe samples\gcd.pas
+.\minipascal.exe --tokens samples\gcd.pas
+.\minipascal.exe samples\broken.pas
+.\tests\run.ps1
+```
+
+Run Task has **build**, **run gcd.pas**, **show tokens**, and **test**.
+
+On Linux the same steps are `make` and `./minipascal`.
 
 ## What each file does
 
@@ -45,10 +50,10 @@ On Windows, WSL is the simple path. Native `win_flex` / `win_bison` + MinGW also
 | `compiler/parser.y` | CFG plus `%left` / `%right` precedence. Actions allocate AST nodes. |
 | `compiler/ast.c` | Node structs: Program, VarDecl, While, Assign, … |
 | `compiler/dump.c` | Prints the tree |
-| `compiler/main.c` | `./minipascal file.pas` or `./minipascal --tokens file.pas` |
-| `Makefile` | `bison -d`, `flex`, then `gcc` |
+| `compiler/main.c` | `minipascal file.pas` or `minipascal --tokens file.pas` |
+| `build.ps1` / `Makefile` | `bison -d`, `flex`, then `gcc` |
 
-`make` produces `lex.yy.c` and `parser.tab.c`. We do not edit those generated files.
+`build.ps1` or `make` produces `lex.yy.c` and `parser.tab.c`. We do not edit those generated files.
 
 ## Lexer — what to say
 
@@ -100,7 +105,7 @@ A later semantic pass would walk this tree. We do not do that yet.
 
 ## How we know it works
 
-`make test` runs:
+`.\tests\run.ps1` (Windows) or `make test` (Linux) runs:
 
 - `gcd.pas`, `factorial.pas`, `bubble.pas` must parse and print a `Program` node
 - `broken.pas` must fail and print a parse error
