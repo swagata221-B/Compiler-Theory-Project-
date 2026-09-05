@@ -13,6 +13,7 @@
 #include <string.h>
 
 int yycolumn = 1;
+static int after_program_dot = 0;
 
 #define YY_USER_ACTION \
     yylloc.first_line = yylloc.last_line = yylineno; \
@@ -55,7 +56,14 @@ ID      [A-Za-z_][A-Za-z0-9_]*
 %%
 
 [ \t\r]+                { }
-\n                      { yycolumn = 1; }
+\n                      {
+                          yycolumn = 1;
+                          /* like the calc lab: after end. a newline finishes input */
+                          if (after_program_dot) {
+                              after_program_dot = 0;
+                              return 0;
+                          }
+                        }
 
 "//".*                  { }
 
@@ -131,7 +139,7 @@ ID      [A-Za-z_][A-Za-z0-9_]*
 ","                     { return COMMA; }
 ";"                     { return SEMI; }
 ":"                     { return COLON; }
-"."                     { return DOT; }
+"."                     { after_program_dot = 1; return DOT; }
 
 {DIGIT}+\.{DIGIT}+([eE][+-]?{DIGIT}+)? {
                           yylval.real = strtod(yytext, NULL);

@@ -61,6 +61,7 @@ program
             $$->child[2] = $5;
             $$->child[3] = $6;
             ast_root = $$;
+            YYACCEPT;
         }
     ;
 
