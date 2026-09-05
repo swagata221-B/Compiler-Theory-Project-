@@ -17,6 +17,5 @@ gcc -std=gnu11 -Wall -Wextra -Icompiler -o minipascal \
     compiler/ast.c compiler/dump.c compiler/interp.c compiler/main.c
 
 echo
-echo "Built. In Git Bash use forward slashes:"
-echo "  ./minipascal.exe samples/gcd.pas"
-echo "Then type numbers (example: 48 18) and press Enter."
+echo "Built. Same as the calc lab: run it, then type MiniPascal."
+echo "  ./minipascal.exe"

@@ -18,22 +18,17 @@ Node.js was the wrong stack for this assignment. The project is C + Flex + Bison
 
 ## How to run it in VS Code
 
-Git Bash (the `MINGW64` prompt) needs Unix slashes. `.\minipascal.exe` will not start.
+Same three tools as the calc lab: `bison`, `flex`, `gcc`. Stay in the project folder (do not build inside `C:\msys64\ucrt64\bin`).
 
 ```bash
 cd ~/Downloads/Compiler-Theory-Project
 sh ./build.sh
-./minipascal.exe samples/gcd.pas
+./minipascal.exe
 ```
 
-Then type `48 18` and press Enter. Output: `gcd = 6`.
+It prints `Enter MiniPascal program:` — type Pascal, end with `end.` — it prints the parse tree.
 
-```bash
-./minipascal.exe --tree samples/gcd.pas
-./minipascal.exe --tokens samples/gcd.pas
-```
-
-On Linux: `make` and `./minipascal`. There is no `presentation/` folder in this project.
+`samples/*.pas` are only examples. `--tokens` dumps the scanner. `--run` executes; that is not Presentation 2.
 
 ## What each file does
 

@@ -50,7 +50,16 @@ else
     echo "OK   array range tokens"
 fi
 
-printf '48 18\n' | "$MP" "$ROOT/samples/gcd.pas" >/tmp/mp-run 2>/tmp/mp-err || true
+printf 'program Demo;\nbegin\nend.\n' | "$MP" >/tmp/mp-in 2>/tmp/mp-err || true
+if ! grep -q "Program" /tmp/mp-in; then
+    echo "FAIL typed MiniPascal from stdin"
+    cat /tmp/mp-in /tmp/mp-err
+    fail=1
+else
+    echo "OK   typed MiniPascal from stdin"
+fi
+
+printf '48 18\n' | "$MP" --run "$ROOT/samples/gcd.pas" >/tmp/mp-run 2>/tmp/mp-err || true
 if ! grep -q "gcd = 6" /tmp/mp-run; then
     echo "FAIL gcd run"
     cat /tmp/mp-run /tmp/mp-err
@@ -59,7 +68,7 @@ else
     echo "OK   gcd run"
 fi
 
-printf '5\n' | "$MP" "$ROOT/samples/factorial.pas" >/tmp/mp-run 2>/tmp/mp-err || true
+printf '5\n' | "$MP" --run "$ROOT/samples/factorial.pas" >/tmp/mp-run 2>/tmp/mp-err || true
 if ! grep -q "120" /tmp/mp-run; then
     echo "FAIL factorial run"
     cat /tmp/mp-run /tmp/mp-err
@@ -68,7 +77,7 @@ else
     echo "OK   factorial run"
 fi
 
-printf '5 1 4 2 3\n' | "$MP" "$ROOT/samples/bubble.pas" >/tmp/mp-run 2>/tmp/mp-err || true
+printf '5 1 4 2 3\n' | "$MP" --run "$ROOT/samples/bubble.pas" >/tmp/mp-run 2>/tmp/mp-err || true
 if ! grep -q "1 2 3 4 5" /tmp/mp-run; then
     echo "FAIL bubble run"
     cat /tmp/mp-run /tmp/mp-err

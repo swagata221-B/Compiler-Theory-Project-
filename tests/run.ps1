@@ -68,7 +68,7 @@ if ($tok -notmatch "DOTDOT") {
     Write-Host "OK   array range tokens"
 }
 
-Invoke-Mp @((Join-Path $Root "samples/gcd.pas")) "48 18`n" | Out-Null
+Invoke-Mp @("--run", (Join-Path $Root "samples/gcd.pas")) "48 18`n" | Out-Null
 $run = Get-Content $out -Raw -ErrorAction SilentlyContinue
 if ($run -notmatch "gcd = 6") {
     Write-Host "FAIL gcd run"

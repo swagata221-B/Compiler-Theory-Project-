@@ -26,9 +26,9 @@
     {
       "label": "run gcd.pas",
       "type": "shell",
-      "command": "make && ./minipascal samples/gcd.pas",
+      "command": "make && ./minipascal",
       "windows": {
-        "command": "sh ./build.sh && ./minipascal.exe samples/gcd.pas"
+        "command": "sh ./build.sh && ./minipascal.exe"
       }
     },
     {
