@@ -2,8 +2,6 @@
 
 Lexer in **Flex**, parser in **Bison**, AST and driver in **C**. This phase only does lexical analysis and syntax analysis. It does not type-check and it does not generate code.
 
-Slides: `presentation/MiniPascal_CSE303_Presentation2.pptx`
-
 If a teacher asks how it was built, see [GUIDE.md](GUIDE.md).
 
 ## Build and run (VS Code or any terminal)
