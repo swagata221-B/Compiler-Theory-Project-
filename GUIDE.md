@@ -77,17 +77,22 @@ On a syntax error Bison calls `yyerror` and we count it. `samples/broken.pas` is
 
 ## Tree
 
-`samples/gcd.pas` becomes:
+If you type:
 
 ```
-Program Gcd
-  VarDecl a, b, t : integer
-  Call read
-  While b <> 0
-    Assign t := b
-    Assign b := a mod b
-    Assign a := t
-  Call writeln
+program Demo;
+var x: integer;
+begin
+  x := 1
+end.
+```
+
+the tree looks like:
+
+```
+Program Demo
+  VarDecl x : integer
+  Assign x := 1
 ```
 
 A later semantic pass would walk this tree. We do not do that yet.
@@ -96,9 +101,9 @@ A later semantic pass would walk this tree. We do not do that yet.
 
 `sh ./tests/run.sh` or `make test` runs:
 
-- `gcd.pas`, `factorial.pas`, `bubble.pas` must parse and print a `Program` node
+- typed MiniPascal must print a `Program` node
 - `broken.pas` must fail and print a parse error
-- `1..5` in the array type must tokenize as `DOTDOT`
+- `1..5` in an array type must tokenize as `DOTDOT`
 
 ## Likely questions
 

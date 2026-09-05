@@ -68,5 +68,5 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host ""
 Write-Host "Built minipascal.exe"
-Write-Host "Git Bash:   ./minipascal.exe samples/gcd.pas"
-Write-Host "PowerShell: .\\minipascal.exe samples\\gcd.pas"
+Write-Host "Git Bash:   ./minipascal.exe"
+Write-Host "Then type MiniPascal and finish with end."

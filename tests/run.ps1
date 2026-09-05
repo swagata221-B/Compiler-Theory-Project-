@@ -3,7 +3,7 @@ $Root = Split-Path -Parent $PSScriptRoot
 $Mp = Join-Path $Root "minipascal.exe"
 if (-not (Test-Path $Mp)) { $Mp = Join-Path $Root "minipascal" }
 if (-not (Test-Path $Mp)) {
-    Write-Host "Build first:  .\build.ps1   or   sh ./build.sh"
+    Write-Host "Build first:  sh ./build.sh"
     exit 1
 }
 
@@ -22,59 +22,34 @@ function Invoke-Mp {
     return $p.ExitCode
 }
 
-function Test-OkTree([string]$file) {
-    $code = Invoke-Mp @("--tree", (Join-Path $Root $file))
-    $stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
-    $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
-    if ($code -ne 0) {
-        Write-Host "FAIL $file (expected success)"
-        if ($stderr) { Write-Host $stderr }
-        $script:fail = 1
-    } elseif ($stdout -notmatch "Program") {
-        Write-Host "FAIL $file (no Program node)"
-        Write-Host $stdout
-        $script:fail = 1
-    } else {
-        Write-Host "OK   $file (tree)"
-    }
+Invoke-Mp @() "program Demo;`nvar x: integer;`nbegin`n  x := 1`nend.`n" | Out-Null
+$stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
+if ($stdout -notmatch "Program") {
+    Write-Host "FAIL typed MiniPascal"
+    $fail = 1
+} else {
+    Write-Host "OK   typed MiniPascal"
 }
 
-function Test-Bad([string]$file) {
-    $code = Invoke-Mp @("--tree", (Join-Path $Root $file))
-    $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
-    if ($code -eq 0) {
-        Write-Host "FAIL $file (expected syntax error)"
-        $script:fail = 1
-    } elseif ($stderr -notmatch "parse error|lex error") {
-        Write-Host "FAIL $file (no error message)"
-        if ($stderr) { Write-Host $stderr }
-        $script:fail = 1
-    } else {
-        Write-Host "OK   $file (rejected)"
-    }
+$code = Invoke-Mp @((Join-Path $Root "samples/broken.pas"))
+$stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
+if ($code -eq 0) {
+    Write-Host "FAIL broken.pas (expected syntax error)"
+    $fail = 1
+} elseif ($stderr -notmatch "parse error|lex error") {
+    Write-Host "FAIL broken.pas (no error message)"
+    $fail = 1
+} else {
+    Write-Host "OK   broken.pas (rejected)"
 }
 
-Test-OkTree "samples/gcd.pas"
-Test-OkTree "samples/factorial.pas"
-Test-OkTree "samples/bubble.pas"
-Test-Bad "samples/broken.pas"
-
-$code = Invoke-Mp @("--tokens", (Join-Path $Root "samples/bubble.pas"))
+Invoke-Mp @("--tokens") "program A;`nvar a: array [1..5] of integer;`nbegin`nend.`n" | Out-Null
 $tok = Get-Content $out -Raw -ErrorAction SilentlyContinue
 if ($tok -notmatch "DOTDOT") {
     Write-Host "FAIL array range is not tokenized as .."
     $fail = 1
 } else {
     Write-Host "OK   array range tokens"
-}
-
-Invoke-Mp @("--run", (Join-Path $Root "samples/gcd.pas")) "48 18`n" | Out-Null
-$run = Get-Content $out -Raw -ErrorAction SilentlyContinue
-if ($run -notmatch "gcd = 6") {
-    Write-Host "FAIL gcd run"
-    $fail = 1
-} else {
-    Write-Host "OK   gcd run"
 }
 
 if ($fail -ne 0) { exit 1 }

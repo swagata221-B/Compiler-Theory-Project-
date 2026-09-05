@@ -15,16 +15,7 @@
       "problemMatcher": ["$gcc"]
     },
     {
-      "label": "test",
-      "type": "shell",
-      "command": "make test",
-      "windows": {
-        "command": "sh ./tests/run.sh"
-      },
-      "group": "test"
-    },
-    {
-      "label": "run gcd.pas",
+      "label": "run (type MiniPascal)",
       "type": "shell",
       "command": "make && ./minipascal",
       "windows": {
@@ -32,28 +23,13 @@
       }
     },
     {
-      "label": "show tree",
+      "label": "test",
       "type": "shell",
-      "command": "make && ./minipascal --tree samples/gcd.pas",
+      "command": "make test",
       "windows": {
-        "command": "sh ./build.sh && ./minipascal.exe --tree samples/gcd.pas"
-      }
-    },
-    {
-      "label": "show tokens",
-      "type": "shell",
-      "command": "make && ./minipascal --tokens samples/gcd.pas",
-      "windows": {
-        "command": "sh ./build.sh && ./minipascal.exe --tokens samples/gcd.pas"
-      }
-    },
-    {
-      "label": "run broken.pas",
-      "type": "shell",
-      "command": "make && ./minipascal samples/broken.pas",
-      "windows": {
-        "command": "sh ./build.sh && ./minipascal.exe samples/broken.pas"
-      }
+        "command": "sh ./tests/run.sh"
+      },
+      "group": "test"
     },
     {
       "label": "clean",

@@ -40,7 +40,7 @@ test: minipascal
 	./tests/run.sh
 
 tokens: minipascal
-	./minipascal --tokens samples/gcd.pas
+	printf 'program A;\nvar a: array [1..5] of integer;\nbegin\nend.\n' | ./minipascal --tokens
 
 clean:
 	rm -f minipascal minipascal.exe compiler/parser.tab.c compiler/parser.tab.h compiler/lex.yy.c $(OBJS)

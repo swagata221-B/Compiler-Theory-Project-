@@ -9,38 +9,15 @@
       "linux": {
         "command": "make"
       },
-      "osx": {
-        "command": "make"
-      },
       "cwd": "${workspaceFolder}"
     },
     {
-      "name": "Run gcd.pas",
+      "name": "Run (type MiniPascal)",
       "type": "node-terminal",
       "request": "launch",
-      "command": "sh ./build.sh && ./minipascal.exe samples/gcd.pas",
+      "command": "sh ./build.sh && ./minipascal.exe",
       "linux": {
-        "command": "make && ./minipascal samples/gcd.pas"
-      },
-      "cwd": "${workspaceFolder}"
-    },
-    {
-      "name": "Show tree (gcd.pas)",
-      "type": "node-terminal",
-      "request": "launch",
-      "command": "sh ./build.sh && ./minipascal.exe --tree samples/gcd.pas",
-      "linux": {
-        "command": "make && ./minipascal --tree samples/gcd.pas"
-      },
-      "cwd": "${workspaceFolder}"
-    },
-    {
-      "name": "Show tokens (gcd.pas)",
-      "type": "node-terminal",
-      "request": "launch",
-      "command": "sh ./build.sh && ./minipascal.exe --tokens samples/gcd.pas",
-      "linux": {
-        "command": "make && ./minipascal --tokens samples/gcd.pas"
+        "command": "make && ./minipascal"
       },
       "cwd": "${workspaceFolder}"
     },
