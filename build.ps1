@@ -3,6 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
+if (Test-Path presentation) { Remove-Item -Recurse -Force presentation }
 
 function Find-Cmd {
     param([string[]]$Names)
@@ -58,6 +59,7 @@ $sources = @(
     "compiler/lex.yy.c",
     "compiler/ast.c",
     "compiler/dump.c",
+    "compiler/interp.c",
     "compiler/main.c"
 )
 
@@ -66,7 +68,5 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host ""
 Write-Host "Built minipascal.exe"
-Write-Host "  .\minipascal.exe samples\gcd.pas"
-Write-Host "  .\minipascal.exe --tokens samples\gcd.pas"
-Write-Host "  .\minipascal.exe samples\broken.pas"
-Write-Host "  .\tests\run.ps1"
+Write-Host "Git Bash:   ./minipascal.exe samples/gcd.pas"
+Write-Host "PowerShell: .\\minipascal.exe samples\\gcd.pas"

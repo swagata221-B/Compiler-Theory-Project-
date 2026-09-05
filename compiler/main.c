@@ -1,5 +1,6 @@
 #include "ast.h"
 #include "dump.h"
+#include "interp.h"
 #include "parser.tab.h"
 
 #include <stdio.h>
@@ -84,15 +85,30 @@ static int dump_tokens(void) {
 }
 
 static void usage(const char *argv0) {
-    fprintf(stderr, "Usage: %s [--tokens] <file.pas>\n", argv0);
+    fprintf(stderr,
+            "Usage:\n"
+            "  %s <file.pas>           run the program (type input in this terminal)\n"
+            "  %s --tree <file.pas>    print the parse tree\n"
+            "  %s --tokens <file.pas>  print tokens\n",
+            argv0, argv0, argv0);
+}
+
+static void trim_line(char *s) {
+    size_t n = strlen(s);
+    while (n > 0 && (s[n - 1] == '\n' || s[n - 1] == '\r' || s[n - 1] == ' ')) {
+        s[--n] = '\0';
+    }
 }
 
 int main(int argc, char **argv) {
     int tokens_only = 0;
+    int tree_only = 0;
     const char *file = NULL;
+    char pathbuf[1024];
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--tokens") == 0) tokens_only = 1;
+        else if (strcmp(argv[i], "--tree") == 0) tree_only = 1;
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
             usage(argv[0]);
             return 0;
@@ -105,8 +121,15 @@ int main(int argc, char **argv) {
     }
 
     if (!file) {
-        usage(argv[0]);
-        return 2;
+        printf("MiniPascal file (example: samples/gcd.pas): ");
+        fflush(stdout);
+        if (!fgets(pathbuf, sizeof pathbuf, stdin)) return 2;
+        trim_line(pathbuf);
+        if (!pathbuf[0]) {
+            usage(argv[0]);
+            return 2;
+        }
+        file = pathbuf;
     }
 
     yyin = fopen(file, "r");
@@ -117,14 +140,20 @@ int main(int argc, char **argv) {
 
     int status = 0;
     if (tokens_only) {
+        printf("=== tokens (%s) ===\n", file);
         status = dump_tokens();
     } else {
         if (yyparse() != 0) status = 1;
         if (error_count) status = 1;
-        if (ast_root) {
+        if (ast_root && tree_only) {
+            printf("=== parse tree (%s) ===\n", file);
             dump_tree(ast_root);
-            free_tree(ast_root);
+        } else if (ast_root && status == 0) {
+            fprintf(stderr, "=== running %s ===\n", file);
+            fprintf(stderr, "If the program calls read, type numbers here and press Enter.\n");
+            status = interpret(ast_root);
         }
+        if (ast_root) free_tree(ast_root);
     }
 
     fclose(yyin);

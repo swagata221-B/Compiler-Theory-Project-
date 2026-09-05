@@ -1,44 +1,86 @@
 # MiniPascal compiler (CSE303)
 
-Lexer in **Flex**, parser in **Bison**, AST and driver in **C**. This phase only does lexical analysis and syntax analysis. It does not type-check and it does not generate code.
+Lexer in **Flex**, parser in **Bison**, AST and a small runner in **C**.
 
-You do **not** need Ubuntu or WSL. Flex and Bison are the same lab tools on Windows. PowerShell can run them once they are installed.
+You type a MiniPascal file in the **terminal**. The program can `read` numbers from that same terminal and `writeln` the result there. There is no extra window.
 
-If a teacher asks how it was built, see [GUIDE.md](GUIDE.md).
+`presentation/` is not part of this project. If that folder is still on disk, delete it.
 
-## Windows (PowerShell in VS Code)
+## Run in VS Code (Git Bash / MINGW64)
 
-Install the Windows ports of the course tools (once). Then close the terminal and open a new one so PATH updates:
+This is the terminal that looks like `swaga@Muninn MINGW64`.
 
-```powershell
-winget install -e --id WinFlexBison.win_flex_bison
-winget install -e --id BrechtSanders.WinLibs.POSIX.UCRT
+Do **not** use PowerShell backslashes. In Git Bash, `.\minipascal.exe` becomes a broken command.
+
+**1.** File → Open Folder → `Compiler-Theory-Project`
+
+**2.** View → Terminal. You should already be in the project:
+
+```
+swaga@Muninn MINGW64 ~/Downloads/Compiler-Theory-Project
 ```
 
-If you already have `gcc` from Code::Blocks or Dev-C++, you only need WinFlexBison.
+If not:
 
-Then, in this folder:
+```bash
+cd ~/Downloads/Compiler-Theory-Project
+```
+
+**3.** Build (only if `minipascal.exe` is missing or you changed the compiler):
+
+```bash
+sh ./build.sh
+```
+
+**4.** Run. Use a **dot-slash** and **forward slashes**:
+
+```bash
+./minipascal.exe samples/gcd.pas
+```
+
+**5.** When it asks for input, type numbers and press Enter:
+
+```
+48 18
+```
+
+You should see:
+
+```
+gcd = 6
+```
+
+Other programs:
+
+```bash
+./minipascal.exe samples/factorial.pas
+# then type: 5
+# output: 120
+
+./minipascal.exe samples/bubble.pas
+# then type: 5 1 4 2 3
+# output: 1 2 3 4 5
+
+./minipascal.exe --tree samples/gcd.pas
+./minipascal.exe --tokens samples/gcd.pas
+./minipascal.exe samples/broken.pas
+```
+
+No file argument: the compiler asks `MiniPascal file:` — type `samples/gcd.pas`, then the numbers.
+
+## PowerShell (only if the prompt starts with `PS C:\`)
 
 ```powershell
 .\build.ps1
 .\minipascal.exe samples\gcd.pas
-.\minipascal.exe --tokens samples\gcd.pas
-.\minipascal.exe samples\broken.pas
-.\tests\run.ps1
 ```
 
-Or Terminal → Run Task → **build** / **run gcd.pas**.
-
-`build.ps1` is the Windows equivalent of the lab sequence: `bison -d`, `flex`, `gcc`.
-
-## Linux / WSL (optional)
+## Linux
 
 ```bash
 sudo apt install build-essential flex bison
 make
 ./minipascal samples/gcd.pas
-./minipascal --tokens samples/gcd.pas
-./minipascal samples/broken.pas
 make test
 ```
 
@@ -46,11 +88,11 @@ make test
 
 ```
 compiler/lexer.l     Flex scanner
-compiler/parser.y    Bison grammar and AST actions
+compiler/parser.y    Bison grammar
 compiler/ast.c       Tree nodes
-compiler/dump.c      Print the tree
-compiler/main.c      CLI
-build.ps1            Windows build (PowerShell)
-Makefile             Linux / WSL build
+compiler/interp.c    Runs the tree (read / writeln)
+compiler/main.c      Terminal driver
 samples/             MiniPascal programs
+build.sh             Git Bash build
+build.ps1            PowerShell build
 ```

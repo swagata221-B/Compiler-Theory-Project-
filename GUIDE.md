@@ -1,10 +1,10 @@
 # If someone asks how we made this
 
-This is a MiniPascal **frontend**: Flex scanner, Bison parser, C abstract syntax tree. We stop after syntax. No types, no code generation.
+This is a MiniPascal **frontend** plus a small tree walker: Flex scanner, Bison parser, C AST, then `read` / `writeln` in the terminal. No type checker and no machine-code generation.
 
 ## One-minute answer
 
-Flex turns `lexer.l` into a scanner (`lex.yy.c`). Bison turns `parser.y` into an LALR(1) parser (`parser.tab.c`). Those two generated files, plus a small AST in C, are linked into `minipascal`. The compiler reads a `.pas` file, prints tokens or a parse tree, and reports errors with a line and column.
+Flex turns `lexer.l` into a scanner (`lex.yy.c`). Bison turns `parser.y` into an LALR(1) parser (`parser.tab.c`). Those two generated files, plus a small AST in C, are linked into `minipascal`. The compiler reads a `.pas` file. `--tokens` prints the token stream. `--tree` prints the parse tree. With no flag it runs the tree: `read` waits in the terminal, `writeln` prints there. Parse errors include a line and column.
 
 ## Why Flex and Bison (not Node.js)
 
@@ -18,29 +18,22 @@ Node.js was the wrong stack for this assignment. The project is C + Flex + Bison
 
 ## How to run it in VS Code
 
-You do not need Linux. The course tools are Flex, Bison, and gcc. Those exist as Windows programs.
+Git Bash (the `MINGW64` prompt) needs Unix slashes. `.\minipascal.exe` will not start.
 
-1. Install Flex, Bison, and gcc on Windows (once):
-
-```powershell
-winget install -e --id WinFlexBison.win_flex_bison
-winget install -e --id BrechtSanders.WinLibs.POSIX.UCRT
+```bash
+cd ~/Downloads/Compiler-Theory-Project
+sh ./build.sh
+./minipascal.exe samples/gcd.pas
 ```
 
-2. **File → Open Folder** on this project.
-3. PowerShell:
+Then type `48 18` and press Enter. Output: `gcd = 6`.
 
-```powershell
-.\build.ps1
-.\minipascal.exe samples\gcd.pas
-.\minipascal.exe --tokens samples\gcd.pas
-.\minipascal.exe samples\broken.pas
-.\tests\run.ps1
+```bash
+./minipascal.exe --tree samples/gcd.pas
+./minipascal.exe --tokens samples/gcd.pas
 ```
 
-Run Task has **build**, **run gcd.pas**, **show tokens**, and **test**.
-
-On Linux the same steps are `make` and `./minipascal`.
+On Linux: `make` and `./minipascal`. There is no `presentation/` folder in this project.
 
 ## What each file does
 
@@ -50,10 +43,11 @@ On Linux the same steps are `make` and `./minipascal`.
 | `compiler/parser.y` | CFG plus `%left` / `%right` precedence. Actions allocate AST nodes. |
 | `compiler/ast.c` | Node structs: Program, VarDecl, While, Assign, … |
 | `compiler/dump.c` | Prints the tree |
-| `compiler/main.c` | `minipascal file.pas` or `minipascal --tokens file.pas` |
-| `build.ps1` / `Makefile` | `bison -d`, `flex`, then `gcc` |
+| `compiler/interp.c` | Walks the tree; `read` / `write` / `writeln` use the terminal |
+| `compiler/main.c` | `minipascal file.pas` runs it; `--tree` and `--tokens` dump analysis |
+| `build.sh` / `build.ps1` / `Makefile` | `bison -d`, `flex`, then `gcc` |
 
-`build.ps1` or `make` produces `lex.yy.c` and `parser.tab.c`. We do not edit those generated files.
+`build.sh`, `build.ps1`, or `make` produces `lex.yy.c` and `parser.tab.c`. We do not edit those generated files.
 
 ## Lexer — what to say
 
@@ -105,7 +99,7 @@ A later semantic pass would walk this tree. We do not do that yet.
 
 ## How we know it works
 
-`.\tests\run.ps1` (Windows) or `make test` (Linux) runs:
+`sh ./tests/run.sh` or `make test` runs:
 
 - `gcd.pas`, `factorial.pas`, `bubble.pas` must parse and print a `Program` node
 - `broken.pas` must fail and print a parse error

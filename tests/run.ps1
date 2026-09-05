@@ -3,7 +3,7 @@ $Root = Split-Path -Parent $PSScriptRoot
 $Mp = Join-Path $Root "minipascal.exe"
 if (-not (Test-Path $Mp)) { $Mp = Join-Path $Root "minipascal" }
 if (-not (Test-Path $Mp)) {
-    Write-Host "Build first:  .\build.ps1"
+    Write-Host "Build first:  .\build.ps1   or   sh ./build.sh"
     exit 1
 }
 
@@ -12,14 +12,18 @@ $out = Join-Path $env:TEMP "mp-out.txt"
 $err = Join-Path $env:TEMP "mp-err.txt"
 
 function Invoke-Mp {
-    param([string[]]$Args)
+    param([string[]]$Args, [string]$InputText = $null)
+    if ($null -ne $InputText) {
+        $InputText | & $Mp @Args > $out 2> $err
+        return $LASTEXITCODE
+    }
     $p = Start-Process -FilePath $Mp -ArgumentList $Args -NoNewWindow -Wait -PassThru `
         -RedirectStandardOutput $out -RedirectStandardError $err
     return $p.ExitCode
 }
 
-function Test-Ok([string]$file) {
-    $code = Invoke-Mp @((Join-Path $Root $file))
+function Test-OkTree([string]$file) {
+    $code = Invoke-Mp @("--tree", (Join-Path $Root $file))
     $stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
     $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
     if ($code -ne 0) {
@@ -31,12 +35,12 @@ function Test-Ok([string]$file) {
         Write-Host $stdout
         $script:fail = 1
     } else {
-        Write-Host "OK   $file"
+        Write-Host "OK   $file (tree)"
     }
 }
 
 function Test-Bad([string]$file) {
-    $code = Invoke-Mp @((Join-Path $Root $file))
+    $code = Invoke-Mp @("--tree", (Join-Path $Root $file))
     $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
     if ($code -eq 0) {
         Write-Host "FAIL $file (expected syntax error)"
@@ -50,9 +54,9 @@ function Test-Bad([string]$file) {
     }
 }
 
-Test-Ok "samples/gcd.pas"
-Test-Ok "samples/factorial.pas"
-Test-Ok "samples/bubble.pas"
+Test-OkTree "samples/gcd.pas"
+Test-OkTree "samples/factorial.pas"
+Test-OkTree "samples/bubble.pas"
 Test-Bad "samples/broken.pas"
 
 $code = Invoke-Mp @("--tokens", (Join-Path $Root "samples/bubble.pas"))
@@ -62,6 +66,15 @@ if ($tok -notmatch "DOTDOT") {
     $fail = 1
 } else {
     Write-Host "OK   array range tokens"
+}
+
+Invoke-Mp @((Join-Path $Root "samples/gcd.pas")) "48 18`n" | Out-Null
+$run = Get-Content $out -Raw -ErrorAction SilentlyContinue
+if ($run -notmatch "gcd = 6") {
+    Write-Host "FAIL gcd run"
+    $fail = 1
+} else {
+    Write-Host "OK   gcd run"
 }
 
 if ($fail -ne 0) { exit 1 }

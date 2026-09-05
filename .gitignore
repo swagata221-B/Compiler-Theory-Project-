@@ -16,3 +16,6 @@ compiler/*.obj
 /.next
 /out
 agent-tools/
+
+# not part of the compiler
+/presentation/

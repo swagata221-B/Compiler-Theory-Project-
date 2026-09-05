@@ -6,7 +6,7 @@
       "type": "shell",
       "command": "make",
       "windows": {
-        "command": "powershell -ExecutionPolicy Bypass -File ./build.ps1"
+        "command": "sh ./build.sh"
       },
       "group": {
         "kind": "build",
@@ -19,7 +19,7 @@
       "type": "shell",
       "command": "make test",
       "windows": {
-        "command": "powershell -ExecutionPolicy Bypass -File ./tests/run.ps1"
+        "command": "sh ./tests/run.sh"
       },
       "group": "test"
     },
@@ -28,7 +28,15 @@
       "type": "shell",
       "command": "make && ./minipascal samples/gcd.pas",
       "windows": {
-        "command": "powershell -ExecutionPolicy Bypass -File ./build.ps1; if ($LASTEXITCODE -eq 0) { .\\minipascal.exe samples\\gcd.pas }"
+        "command": "sh ./build.sh && ./minipascal.exe samples/gcd.pas"
+      }
+    },
+    {
+      "label": "show tree",
+      "type": "shell",
+      "command": "make && ./minipascal --tree samples/gcd.pas",
+      "windows": {
+        "command": "sh ./build.sh && ./minipascal.exe --tree samples/gcd.pas"
       }
     },
     {
@@ -36,7 +44,7 @@
       "type": "shell",
       "command": "make && ./minipascal --tokens samples/gcd.pas",
       "windows": {
-        "command": "powershell -ExecutionPolicy Bypass -File ./build.ps1; if ($LASTEXITCODE -eq 0) { .\\minipascal.exe --tokens samples\\gcd.pas }"
+        "command": "sh ./build.sh && ./minipascal.exe --tokens samples/gcd.pas"
       }
     },
     {
@@ -44,16 +52,13 @@
       "type": "shell",
       "command": "make && ./minipascal samples/broken.pas",
       "windows": {
-        "command": "powershell -ExecutionPolicy Bypass -File ./build.ps1; if ($LASTEXITCODE -eq 0) { .\\minipascal.exe samples\\broken.pas }"
+        "command": "sh ./build.sh && ./minipascal.exe samples/broken.pas"
       }
     },
     {
       "label": "clean",
       "type": "shell",
-      "command": "make clean",
-      "windows": {
-        "command": "Remove-Item -ErrorAction SilentlyContinue minipascal.exe, compiler/parser.tab.c, compiler/parser.tab.h, compiler/lex.yy.c, compiler/*.o"
-      }
+      "command": "make clean"
     }
   ]
 }
