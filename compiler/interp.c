@@ -267,6 +267,14 @@ static Val eval(Node *n) {
             Val l = eval(n->child[0]);
             Val r = eval(n->child[1]);
             const char *op = n->text;
+            if (l.is_str || r.is_str) {
+                if (ieq(op, "="))
+                    return num_val(l.is_str && r.is_str && strcmp(l.str, r.str) == 0);
+                if (ieq(op, "<>"))
+                    return num_val(!l.is_str || !r.is_str || strcmp(l.str, r.str) != 0);
+                runtime_error(n->line, "operator requires numeric operands");
+                return z;
+            }
             if (ieq(op, "or")) return num_val(truth(l) || truth(r));
             if (ieq(op, "and")) return num_val(truth(l) && truth(r));
             if (ieq(op, "=")) return num_val(l.num == r.num);
@@ -278,9 +286,15 @@ static Val eval(Node *n) {
             if (ieq(op, "+")) return num_val(l.num + r.num);
             if (ieq(op, "-")) return num_val(l.num - r.num);
             if (ieq(op, "*")) return num_val(l.num * r.num);
-            if (ieq(op, "/")) return num_val(r.num == 0 ? 0 : l.num / r.num);
-            if (ieq(op, "div")) return num_val(r.num == 0 ? 0 : (double)((long)l.num / (long)r.num));
-            if (ieq(op, "mod")) return num_val(r.num == 0 ? 0 : (double)((long)l.num % (long)r.num));
+            if (ieq(op, "/") || ieq(op, "div") || ieq(op, "mod")) {
+                if (r.num == 0) {
+                    runtime_error(n->line, "division by zero");
+                    return z;
+                }
+                if (ieq(op, "/")) return num_val(l.num / r.num);
+                if (ieq(op, "div")) return num_val((double)((long)l.num / (long)r.num));
+                return num_val((double)((long)l.num % (long)r.num));
+            }
             return z;
         }
         case N_CALL: {

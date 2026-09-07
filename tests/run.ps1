@@ -12,12 +12,12 @@ $out = Join-Path $env:TEMP "mp-out.txt"
 $err = Join-Path $env:TEMP "mp-err.txt"
 
 function Invoke-Mp {
-    param([string[]]$Args, [string]$InputText = $null)
+    param([string[]]$Arguments, [string]$InputText = $null)
     if ($null -ne $InputText) {
-        $InputText | & $Mp @Args > $out 2> $err
+        $InputText | & $Mp @Arguments > $out 2> $err
         return $LASTEXITCODE
     }
-    $p = Start-Process -FilePath $Mp -ArgumentList $Args -NoNewWindow -Wait -PassThru `
+    $p = Start-Process -FilePath $Mp -ArgumentList $Arguments -NoNewWindow -Wait -PassThru `
         -RedirectStandardOutput $out -RedirectStandardError $err
     return $p.ExitCode
 }
@@ -50,6 +50,34 @@ if ($tok -notmatch "DOTDOT") {
     $fail = 1
 } else {
     Write-Host "OK   array range tokens"
+}
+
+$trailing = Join-Path $env:TEMP "mp-trailing.pas"
+Set-Content -Path $trailing -Value "program A; begin end. garbage"
+$code = Invoke-Mp @($trailing)
+if ($code -eq 0) {
+    Write-Host "FAIL trailing input after final dot was accepted"
+    $fail = 1
+} else {
+    Write-Host "OK   trailing input rejected"
+}
+
+$code = Invoke-Mp @("--run") "program A;`nbegin`nwriteln(1 / 0)`nend.`n"
+$stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
+if ($code -eq 0 -or $stderr -notmatch "division by zero") {
+    Write-Host "FAIL division by zero was not reported"
+    $fail = 1
+} else {
+    Write-Host "OK   division by zero reported"
+}
+
+$code = Invoke-Mp @("--run") "program A;`nbegin`nwriteln('a' = 'b')`nend.`n"
+$stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
+if ($code -ne 0 -or $stdout -notmatch "0") {
+    Write-Host "FAIL unequal string comparison"
+    $fail = 1
+} else {
+    Write-Host "OK   unequal strings compare false"
 }
 
 if ($fail -ne 0) { exit 1 }

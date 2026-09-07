@@ -36,6 +36,32 @@ else
     echo "OK   array range tokens"
 fi
 
+printf 'program A; begin end. garbage\n' >/tmp/mp-trailing.pas
+if "$MP" /tmp/mp-trailing.pas >/tmp/mp-out 2>/tmp/mp-err; then
+    echo "FAIL trailing input after final dot was accepted"
+    fail=1
+else
+    echo "OK   trailing input rejected"
+fi
+
+if printf "program A;\nbegin\nwriteln(1 / 0)\nend.\n" | "$MP" --run >/tmp/mp-out 2>/tmp/mp-err; then
+    echo "FAIL division by zero was not reported"
+    fail=1
+elif ! grep -qi "division by zero" /tmp/mp-err; then
+    echo "FAIL division by zero has no diagnostic"
+    fail=1
+else
+    echo "OK   division by zero reported"
+fi
+
+printf "program A;\nbegin\nwriteln('a' = 'b')\nend.\n" | "$MP" --run >/tmp/mp-out 2>/tmp/mp-err
+if ! grep -q "0" /tmp/mp-out; then
+    echo "FAIL unequal string comparison"
+    fail=1
+else
+    echo "OK   unequal strings compare false"
+fi
+
 if [ "$fail" -ne 0 ]; then
     exit 1
 fi

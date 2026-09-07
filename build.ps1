@@ -3,7 +3,6 @@
 
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
-if (Test-Path presentation) { Remove-Item -Recurse -Force presentation }
 
 function Find-Cmd {
     param([string[]]$Names)

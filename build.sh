@@ -2,7 +2,6 @@
 # Git Bash: gcc from MinGW, Flex/Bison from WinFlexBison (win_flex / win_bison)
 set -e
 cd "$(dirname "$0")"
-rm -rf presentation
 
 for d in \
     /c/MinGW/bin \
