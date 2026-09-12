@@ -80,7 +80,7 @@ On Windows Git Bash, provide input as a **`.pas` file**. Do not type into the wa
 ```bash
 win_bison -d -o compiler/parser.tab.c compiler/parser.y
 win_flex --wincompat -o compiler/lex.yy.c compiler/lexer.l
-gcc -std=gnu11 -Icompiler -o minipascal.exe compiler/parser.tab.c compiler/lex.yy.c compiler/ast.c compiler/dump.c compiler/interp.c compiler/main.c
+gcc -std=gnu11 -Icompiler -o minipascal.exe compiler/parser.tab.c compiler/lex.yy.c compiler/ast.c compiler/dump.c compiler/interp.c compiler/codegen.c compiler/main.c
 
 ./minipascal.exe demo.pas
 ```
@@ -95,3 +95,21 @@ Alternatively, run `sh ./build.sh` if `win_flex`, `win_bison`, and `gcc` are on 
 ```
 
 `samples/broken.pas` is a syntax-error check.
+
+## Generate a standalone executable
+
+The native backend currently supports numeric variables and arrays, assignment,
+arithmetic and comparisons, `if`, `while`, and `write`/`writeln`. It generates C
+from the AST and asks GCC to build a separate executable. It does not yet support
+`read`, `for`, functions, procedures, string expressions, or full static type
+checking; unsupported constructs produce a codegen error instead of a misleading
+executable. Runtime `--run` remains the more complete interpreter path.
+
+```bash
+sh ./build.sh
+./minipascal.exe --compile demo.pas -o demo-native.exe
+./demo-native.exe
+```
+
+The command also leaves `demo-native.exe.c` so the generated C can be shown in
+Presentation 3. The resulting `.exe` runs without `minipascal.exe` or `demo.pas`.

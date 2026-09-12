@@ -1,11 +1,34 @@
 #include "ast.h"
 #include "dump.h"
 #include "interp.h"
+#include "codegen.h"
 #include "parser.tab.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+#include <process.h>
+#else
+#include <sys/wait.h>
+#include <unistd.h>
+#endif
+
+static int compile_c(const char *source, const char *output) {
+    const char *args[] = {"gcc", "-std=gnu11", "-O2", "-o", output, source, NULL};
+#ifdef _WIN32
+    int result = _spawnvp(_P_WAIT, "gcc", args);
+    if (result == -1) perror("gcc");
+    return result == 0 ? 0 : 1;
+#else
+    pid_t child = fork();
+    if (child == 0) { execvp("gcc", (char *const *)args); perror("gcc"); _exit(127); }
+    if (child < 0) { perror("fork"); return 1; }
+    int status;
+    if (waitpid(child, &status, 0) < 0) { perror("waitpid"); return 1; }
+    return WIFEXITED(status) && WEXITSTATUS(status) == 0 ? 0 : 1;
+#endif
+}
 
 extern FILE *yyin;
 extern int yylex(void);
@@ -90,19 +113,24 @@ static void usage(const char *argv0) {
             "  %s                      type MiniPascal, then see the parse tree\n"
             "  %s <file.pas>           parse a file, print the tree\n"
             "  %s --tokens [file]      print tokens\n"
-            "  %s --run <file.pas>     execute read/writeln (beyond Presentation 2)\n",
-            argv0, argv0, argv0, argv0);
+            "  %s --run <file.pas>     interpret a program\n"
+            "  %s --compile <file.pas> -o <output.exe>  generate a standalone executable\n",
+            argv0, argv0, argv0, argv0, argv0);
 }
 
 int main(int argc, char **argv) {
     int tokens_only = 0;
     int do_run = 0;
+    int do_compile = 0;
     const char *file = NULL;
+    const char *output = NULL;
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--tokens") == 0) tokens_only = 1;
         else if (strcmp(argv[i], "--tree") == 0) { /* default; accepted for old scripts */ }
         else if (strcmp(argv[i], "--run") == 0) do_run = 1;
+        else if (strcmp(argv[i], "--compile") == 0) do_compile = 1;
+        else if (strcmp(argv[i], "-o") == 0 && i + 1 < argc) output = argv[++i];
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
             usage(argv[0]);
             return 0;
@@ -110,8 +138,14 @@ int main(int argc, char **argv) {
             fprintf(stderr, "Unknown option %s\n", argv[i]);
             return 2;
         } else {
+            if (file) { fprintf(stderr, "Only one input file is allowed\n"); return 2; }
             file = argv[i];
         }
+    }
+
+    if (do_compile && (tokens_only || do_run || !file || !output)) {
+        fprintf(stderr, "Use --compile <file.pas> -o <output.exe>\n");
+        return 2;
     }
 
     if (file) {
@@ -135,7 +169,18 @@ int main(int argc, char **argv) {
     } else {
         if (yyparse() != 0) status = 1;
         if (error_count) status = 1;
-        if (ast_root && do_run && status == 0) {
+        if (ast_root && do_compile && status == 0) {
+            size_t length = strlen(output) + 3;
+            char *source = malloc(length);
+            if (!source) { perror("malloc"); status = 1; }
+            else {
+                snprintf(source, length, "%s.c", output);
+                status = generate_c(ast_root, source);
+                if (!status) status = compile_c(source, output);
+                if (!status) printf("Generated %s (C source: %s)\n", output, source);
+                free(source);
+            }
+        } else if (ast_root && do_run && status == 0) {
             status = interpret(ast_root);
         } else if (ast_root) {
             printf("=== parse tree ===\n");

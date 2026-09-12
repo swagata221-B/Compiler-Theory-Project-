@@ -81,4 +81,17 @@ if ($code -ne 0 -or $stdout -notmatch "0") {
 }
 
 if ($fail -ne 0) { exit 1 }
+
+$native = Join-Path $env:TEMP "mp-native-test.exe"
+$code = Invoke-Mp @("--compile", (Join-Path $Root "samples/native-demo.pas"), "-o", $native)
+if ($code -ne 0 -or -not (Test-Path $native)) {
+    Write-Host "FAIL standalone executable generation"
+    exit 1
+}
+$nativeOutput = & $native
+if ($LASTEXITCODE -ne 0 -or $nativeOutput.Trim() -ne "5") {
+    Write-Host "FAIL standalone executable output"
+    exit 1
+}
+Write-Host "OK   standalone executable outputs 5"
 Write-Host "All tests passed."

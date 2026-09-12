@@ -59,6 +59,7 @@ $sources = @(
     "compiler/ast.c",
     "compiler/dump.c",
     "compiler/interp.c",
+    "compiler/codegen.c",
     "compiler/main.c"
 )
 
