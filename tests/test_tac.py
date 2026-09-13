@@ -156,7 +156,7 @@ class TacTests(unittest.TestCase):
         tree = invoke(source, '--tree')
         self.assertEqual(tree.returncode, 0, tree.stderr)
         self.assertIn('Program ', tree.stdout)
-        self.assertIn('Ident Demo', tree.stdout)
+        self.assertIn('Identifier Demo', tree.stdout)
         tokens = invoke(source, '--tokens')
         self.assertEqual(tokens.returncode, 0)
         self.assertEqual(len(re.findall(r'^\s*\d+:', tokens.stdout, re.M)), 25)

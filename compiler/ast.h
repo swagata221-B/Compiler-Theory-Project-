@@ -1,6 +1,11 @@
 #ifndef AST_H
 #define AST_H
 
+#include <stdio.h>
+
+const char *source_line(int line);
+void source_excerpt(FILE *out, int line, int column);
+
 typedef enum {
     N_PROGRAM,
     N_IDENT,

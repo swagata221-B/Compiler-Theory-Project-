@@ -5,16 +5,77 @@
 #include "parser.tab.h"
 
 #include <stdio.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
 extern FILE *yyin;
 extern int yylex(void);
+struct yy_buffer_state;
+extern struct yy_buffer_state *yy_scan_bytes(const char *bytes, int length);
+extern int yylex_destroy(void);
 extern int yyparse(void);
 extern int yylineno;
 extern int yycolumn;
 extern char *yytext;
 extern YYLTYPE yylloc;
+
+/* Keep source text available for diagnostics and AST annotations, including stdin. */
+static char *source_text;
+static char **source_lines;
+static size_t source_line_count;
+
+const char *source_line(int line) {
+    return line > 0 && (size_t)line <= source_line_count ? source_lines[line - 1] : NULL;
+}
+
+void source_excerpt(FILE *out, int line, int column) {
+    const char *text = source_line(line);
+    if (!text) return;
+    fprintf(out, "%d | %s\n", line, text);
+    if (column > 0) {
+        int width = snprintf(NULL, 0, "%d", line);
+        fprintf(out, "%*s | ", width, "");
+        for (int i = 1; i < column && text[i - 1]; ++i)
+            fputc(text[i - 1] == '\t' ? '\t' : ' ', out);
+        fputs("^\n", out);
+    }
+}
+
+static int capture_source(FILE *input) {
+    size_t size = 0, capacity = 4096;
+    source_text = malloc(capacity);
+    if (!source_text) return 0;
+    int ch;
+    while ((ch = fgetc(input)) != EOF) {
+        if (size + 1 >= capacity) {
+            char *grown = realloc(source_text, capacity * 2);
+            if (!grown) return 0;
+            source_text = grown;
+            capacity *= 2;
+        }
+        source_text[size++] = (char)ch;
+    }
+    if (ferror(input)) return 0;
+    source_text[size] = '\0';
+    if (size > INT_MAX) return 0;
+    /* Flex copies the bytes, so source_text can be split into display lines. */
+    if (!yy_scan_bytes(source_text, (int)size)) return 0;
+    source_line_count = 1;
+    for (size_t i = 0; i < size; ++i) if (source_text[i] == '\n') ++source_line_count;
+    source_lines = malloc(source_line_count * sizeof(*source_lines));
+    if (!source_lines) return 0;
+    size_t line = 0;
+    source_lines[line++] = source_text;
+    for (size_t i = 0; i < size; ++i) {
+        if (source_text[i] == '\n') {
+            source_text[i] = '\0';
+            if (i > 0 && source_text[i - 1] == '\r') source_text[i - 1] = '\0';
+            source_lines[line++] = source_text + i + 1;
+        }
+    }
+    return 1;
+}
 
 static const char *token_name(int tok) {
     switch (tok) {
@@ -136,6 +197,18 @@ int main(int argc, char **argv) {
         fflush(stdout);
     }
 
+    FILE *input = yyin;
+    int captured = capture_source(input);
+    if (file) fclose(input);
+    else clearerr(stdin);
+    if (!captured) {
+        yylex_destroy();
+        fprintf(stderr, "Cannot buffer source input for parsing\n");
+        free(source_lines);
+        free(source_text);
+        return 2;
+    }
+
     int status = 0;
     if (tokens_only) {
         if (file) printf("=== tokens (%s) ===\n", file);
@@ -148,13 +221,16 @@ int main(int argc, char **argv) {
             if (ast_root && status == 0) status = emit_tac(ast_root, stdout);
         } else if (ast_root && do_run && status == 0) {
             status = interpret(ast_root);
-        } else if (ast_root) {
-            printf("=== parse tree ===\n");
+        } else if (ast_root && status == 0) {
+            printf("=== syntax tree (AST) ===\n");
+            printf("Indentation shows children; [line N] refers to your Pascal source.\n");
             dump_tree(ast_root);
         }
         if (ast_root) free_tree(ast_root);
     }
 
-    if (file && yyin) fclose(yyin);
+    yylex_destroy();
+    free(source_lines);
+    free(source_text);
     return status;
 }

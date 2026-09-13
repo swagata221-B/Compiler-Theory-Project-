@@ -4,6 +4,7 @@
 #endif
 #ifdef _WIN32
 #define YY_NO_UNISTD_H 1
+#include <io.h>
 #endif
 #include "ast.h"
 #include "parser.tab.h"
@@ -66,6 +67,7 @@ ID      [A-Za-z_][A-Za-z0-9_]*
 <BRACE>\n               { yycolumn = 1; }
 <BRACE>"}"              { BEGIN(INITIAL); }
 <BRACE><<EOF>>          {
+                          source_excerpt(stderr, yylineno, yycolumn);
                           fprintf(stderr, "lex error at %d:%d: unterminated comment\n",
                                   yylineno, yycolumn);
                           error_count++;
@@ -78,6 +80,7 @@ ID      [A-Za-z_][A-Za-z0-9_]*
 <COMMENT>\n             { yycolumn = 1; }
 <COMMENT>"*"+")"        { BEGIN(INITIAL); }
 <COMMENT><<EOF>>        {
+                          source_excerpt(stderr, yylineno, yycolumn);
                           fprintf(stderr, "lex error at %d:%d: unterminated comment\n",
                                   yylineno, yycolumn);
                           error_count++;
@@ -156,6 +159,7 @@ ID      [A-Za-z_][A-Za-z0-9_]*
                         }
 
 \'([^'\n]|\'\')*        {
+                          source_excerpt(stderr, yylineno, yycolumn - yyleng);
                           fprintf(stderr, "lex error at %d:%d: unterminated string\n",
                                   yylineno, yycolumn - yyleng);
                           error_count++;
@@ -164,6 +168,7 @@ ID      [A-Za-z_][A-Za-z0-9_]*
                         }
 
 .                       {
+                          source_excerpt(stderr, yylineno, yycolumn - yyleng);
                           fprintf(stderr, "lex error at %d:%d: unexpected character '%s'\n",
                                   yylineno, yycolumn - yyleng, yytext);
                           error_count++;

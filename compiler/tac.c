@@ -29,6 +29,7 @@ static int same_name(const char *a, const char *b) {
 }
 
 static void fail(Tac *t, Node *n, const char *message) {
+    source_excerpt(stderr, n ? n->line : 0, 0);
     fprintf(stderr, "TAC error at line %d: %s\n", n ? n->line : 0, message);
     t->failed = 1;
 }

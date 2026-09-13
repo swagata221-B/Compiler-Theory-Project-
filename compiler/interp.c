@@ -44,6 +44,7 @@ static int ieq(const char *a, const char *b) {
 }
 
 static void runtime_error(int line, const char *msg) {
+    source_excerpt(stderr, line, 0);
     fprintf(stderr, "runtime error at line %d: %s\n", line, msg);
     run_errors++;
 }

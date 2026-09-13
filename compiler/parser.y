@@ -305,6 +305,7 @@ expr
 %%
 
 void yyerror(const char *msg) {
+    source_excerpt(stderr, yylloc.first_line, yylloc.first_column);
     fprintf(stderr, "parse error at %d:%d: %s\n",
             yylloc.first_line, yylloc.first_column, msg);
     error_count++;
