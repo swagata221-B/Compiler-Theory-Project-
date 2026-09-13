@@ -121,3 +121,13 @@ Not in this phase.
 
 **Did you copy a GitHub compiler?**  
 No. This is a teaching MiniPascal grammar. The `.l`, `.y`, and AST are written for this project.
+
+
+## TAC update
+
+The scalar TAC emitter is now implemented in `compiler/tac.c`.
+Run `.\minipascal.exe --tac demo.pas` in PowerShell to show the Presentation 2
+IR example. In Notepad search `emit_tac`, `expression`, or `N_IF` in tac.c.
+The parser still builds an AST; TAC generation is a separate pass afterward.
+Static semantic checking, arrays/subprograms in TAC, and executable backend
+generation remain future work. See the README for the supported subset.

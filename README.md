@@ -71,7 +71,7 @@ The CFG is not converted directly into semantic meaning. The frontend follows th
 
 For example, matching `ident ASSIGN expr` creates an `N_ASSIGN` AST node. This parser action constructs structure; the later semantic-analysis pass determines whether the identifier is declared and whether the expression type is compatible with it.
 
-Semantic analysis and automatic IR emission are design-stage work for the current milestone. The proposed IR is three-address code, followed by a backend that lowers typed IR to C and uses GCC to generate a separate executable.
+The `--tac` option now lowers the scalar AST to textual three-address code in `compiler/tac.c`. Static semantic analysis and a backend that lowers typed IR to C and builds a separate executable remain planned work. TAC generation currently assumes meaningful scalar input; it does not perform declaration or type checking.
 
 ## Build and run
 
@@ -80,7 +80,7 @@ On Windows Git Bash, provide input as a **`.pas` file**. Do not type into the wa
 ```bash
 win_bison -d -o compiler/parser.tab.c compiler/parser.y
 win_flex --wincompat -o compiler/lex.yy.c compiler/lexer.l
-gcc -std=gnu11 -Icompiler -o minipascal.exe compiler/parser.tab.c compiler/lex.yy.c compiler/ast.c compiler/dump.c compiler/interp.c compiler/main.c
+gcc -std=gnu11 -Icompiler -o minipascal.exe compiler/parser.tab.c compiler/lex.yy.c compiler/ast.c compiler/dump.c compiler/interp.c compiler/tac.c compiler/main.c
 
 ./minipascal.exe demo.pas
 ```
@@ -95,3 +95,45 @@ Alternatively, run `sh ./build.sh` if `win_flex`, `win_bison`, and `gcc` are on 
 ```
 
 `samples/broken.pas` is a syntax-error check.
+
+
+## Three-address code (TAC)
+
+Build with `build.ps1`, `build.sh`, or `make`, then run in PowerShell:
+
+```powershell
+.\minipascal.exe --tac demo.pas
+```
+
+Output matching the Presentation 2 example (with `L1` as the end label):
+
+```text
+n = 5
+t1 = n > 0
+IF_FALSE t1 GOTO L1
+t2 = n - 1
+n = t2
+L1:
+```
+
+Use `--tac` without a filename to enter Pascal in the terminal. Finish input
+with the terminal's EOF sequence (PowerShell: Ctrl+Z, then Enter). File input
+is recommended for demonstrations. Syntax errors prevent TAC emission.
+
+`parser.y` builds the AST. `main.c` calls `emit_tac()` from `compiler/tac.c`.
+Search that file for `expression` (temporary values), `N_ASSIGN` (assignments),
+`N_IF` (branches), `N_WHILE` / `N_FOR` (loops), or `emit_tac` (entry point).
+
+Supported: scalar literals/variables, arithmetic and comparisons, unary and
+Boolean operations, assignment, if/else, while, for/to/downto, and basic
+read/readln/write/writeln statements. Boolean operands are evaluated eagerly,
+as in the prototype interpreter. READ consumes a numeric value; WRITELN adds
+a newline. Variable names are normalized to lowercase because Pascal is
+case-insensitive. Generated temporary names skip source identifiers.
+
+Arrays, user subprograms, return statements, and calls inside expressions
+produce an explicit TAC error. No partial TAC is emitted. This is untyped
+textual IR for demonstration; `--run` still executes the AST, and `--tac`
+does not create a separate executable. Static type checking is not included.
+
+Additional TAC regression checks (Python 3): `py -3 tests/test_tac.py`.

@@ -59,6 +59,7 @@ $sources = @(
     "compiler/ast.c",
     "compiler/dump.c",
     "compiler/interp.c",
+    "compiler/tac.c",
     "compiler/main.c"
 )
 
@@ -67,5 +68,5 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host ""
 Write-Host "Built minipascal.exe"
-Write-Host "Git Bash:   ./minipascal.exe"
-Write-Host "Then type MiniPascal and finish with end."
+Write-Host "Parse tree: .\minipascal.exe demo.pas"
+Write-Host "TAC:        .\minipascal.exe --tac demo.pas"

@@ -3,7 +3,7 @@ CFLAGS  = -std=gnu11 -Wall -Wextra -Icompiler
 LEX     = flex
 YACC    = bison
 
-OBJS = compiler/parser.tab.o compiler/lex.yy.o compiler/ast.o compiler/dump.o compiler/interp.o compiler/main.o
+OBJS = compiler/parser.tab.o compiler/lex.yy.o compiler/ast.o compiler/dump.o compiler/interp.o compiler/tac.o compiler/main.o
 
 .PHONY: all clean test tokens
 
@@ -33,7 +33,10 @@ compiler/dump.o: compiler/dump.c compiler/dump.h compiler/ast.h
 compiler/interp.o: compiler/interp.c compiler/interp.h compiler/ast.h
 	$(CC) $(CFLAGS) -c -o $@ compiler/interp.c
 
-compiler/main.o: compiler/main.c compiler/ast.h compiler/dump.h compiler/interp.h compiler/parser.tab.h
+compiler/tac.o: compiler/tac.c compiler/tac.h compiler/ast.h
+	$(CC) $(CFLAGS) -c -o $@ compiler/tac.c
+
+compiler/main.o: compiler/main.c compiler/ast.h compiler/dump.h compiler/interp.h compiler/tac.h compiler/parser.tab.h
 	$(CC) $(CFLAGS) -c -o $@ compiler/main.c
 
 test: minipascal

@@ -55,7 +55,7 @@ fi
 
 "$CC" -std=gnu11 -Wall -Wextra -Icompiler -o minipascal \
     compiler/parser.tab.c compiler/lex.yy.c \
-    compiler/ast.c compiler/dump.c compiler/interp.c compiler/main.c
+    compiler/ast.c compiler/dump.c compiler/interp.c compiler/tac.c compiler/main.c
 
 echo
 echo "Built. Run:"

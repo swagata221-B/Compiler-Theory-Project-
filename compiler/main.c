@@ -1,6 +1,7 @@
 #include "ast.h"
 #include "dump.h"
 #include "interp.h"
+#include "tac.h"
 #include "parser.tab.h"
 
 #include <stdio.h>
@@ -90,18 +91,21 @@ static void usage(const char *argv0) {
             "  %s                      type MiniPascal, then see the parse tree\n"
             "  %s <file.pas>           parse a file, print the tree\n"
             "  %s --tokens [file]      print tokens\n"
+            "  %s --tac [file.pas]     generate three-address code\n"
             "  %s --run <file.pas>     execute read/writeln (beyond Presentation 2)\n",
-            argv0, argv0, argv0, argv0);
+            argv0, argv0, argv0, argv0, argv0);
 }
 
 int main(int argc, char **argv) {
     int tokens_only = 0;
     int do_run = 0;
+    int do_tac = 0;
     const char *file = NULL;
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--tokens") == 0) tokens_only = 1;
         else if (strcmp(argv[i], "--tree") == 0) { /* default; accepted for old scripts */ }
+        else if (strcmp(argv[i], "--tac") == 0) do_tac = 1;
         else if (strcmp(argv[i], "--run") == 0) do_run = 1;
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
             usage(argv[0]);
@@ -114,6 +118,11 @@ int main(int argc, char **argv) {
         }
     }
 
+    if (do_tac && (tokens_only || do_run)) {
+        fprintf(stderr, "Use --tac separately from --tokens or --run\n");
+        return 2;
+    }
+
     if (file) {
         yyin = fopen(file, "r");
         if (!yyin) {
@@ -122,7 +131,7 @@ int main(int argc, char **argv) {
         }
     } else {
         yyin = stdin;
-        printf("MiniPascal compiler  (Presentation 2: lexer + parser + tree)\n");
+        printf("MiniPascal compiler  (%s)\n", do_tac ? "three-address code" : "lexer + parser + tree");
         printf("Enter MiniPascal program:\n");
         fflush(stdout);
     }
@@ -135,7 +144,9 @@ int main(int argc, char **argv) {
     } else {
         if (yyparse() != 0) status = 1;
         if (error_count) status = 1;
-        if (ast_root && do_run && status == 0) {
+        if (do_tac) {
+            if (ast_root && status == 0) status = emit_tac(ast_root, stdout);
+        } else if (ast_root && do_run && status == 0) {
             status = interpret(ast_root);
         } else if (ast_root) {
             printf("=== parse tree ===\n");
